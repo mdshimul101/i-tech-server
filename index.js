@@ -34,7 +34,7 @@ async function run() {
       res.send(result);
     });
     app.get("/products", async (req, res) => {
-      console.log(req.query.categoryName);
+      //   console.log(req.query.categoryName);
       let query = {};
       if (req.query.categoryName) {
         query = {
