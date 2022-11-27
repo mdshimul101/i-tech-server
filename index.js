@@ -92,8 +92,13 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/bookings", async (req, res) => {
+    app.get("/bookings", verifyJWT, async (req, res) => {
       const email = req.query.email;
+      const decodedEmail = req.decoded.email;
+
+      if (email !== decodedEmail) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
       const query = { email: email };
       const bookings = await bookingsCollection.find(query).toArray();
       res.send(bookings);
@@ -106,16 +111,52 @@ async function run() {
       res.send(result);
     });
     app.get("/users", async (req, res) => {
-      const query = {};
-      if (req.query.name) {
-        query = {
-          name: req.query.name,
-        };
+      let query = {};
+      const email = req.query.email;
+      if (email) {
+        const query = { email: email };
+        const singleUser = await usersCollection.findOne(query);
+
+        if (singleUser.status !== "Admin") {
+          // console.log(singleUser.status);
+          return res.send(singleUser);
+        }
       }
-      // console.log(user);
+      // console.log("ok,,");
       const result = await usersCollection.find(query).toArray();
 
       res.send(result);
+    });
+
+    app.get("/users/status", async (req, res) => {
+      const email = req.query.email;
+      if (email) {
+        query = { email: email };
+      }
+      // console.log("ok,,");
+      const singleUser = await usersCollection.findOne(query);
+      console.log(singleUser.status);
+      res.send(singleUser);
+    });
+
+    app.post("/jwt", (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "30d",
+      });
+      res.send({ token });
+    });
+    app.get("/jwt", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      if (user) {
+        const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, {
+          expiresIn: "30d",
+        });
+        return res.send({ accessToken: token });
+      }
+      res.status(403).send({ accessToken: "" });
     });
   } finally {
   }
