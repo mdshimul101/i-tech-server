@@ -22,6 +22,7 @@ async function run() {
     const categoriesCollection = client.db("i-tech").collection("categories");
     const productsCollection = client.db("i-tech").collection("products");
     const bookingsCollection = client.db("i-tech").collection("bookings");
+    const usersCollection = client.db("i-tech").collection("users");
 
     app.get("/categories", async (req, res) => {
       const query = {};
@@ -78,6 +79,13 @@ async function run() {
       const query = { email: email };
       const bookings = await bookingsCollection.find(query).toArray();
       res.send(bookings);
+    });
+
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
     });
   } finally {
   }
