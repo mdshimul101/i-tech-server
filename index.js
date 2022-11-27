@@ -138,6 +138,17 @@ async function run() {
       console.log(singleUser.status);
       res.send(singleUser);
     });
+    app.get("/users/seller", async (req, res) => {
+      const Status = req.query.status;
+      console.log(Status);
+      if (Status) {
+        query = { status: Status };
+      }
+      // console.log("ok,,");
+      const seller = await usersCollection.find(query).toArray();
+
+      res.send(seller);
+    });
 
     app.post("/jwt", (req, res) => {
       const user = req.body;
