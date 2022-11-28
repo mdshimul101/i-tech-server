@@ -163,7 +163,7 @@ async function run() {
       const result = await usersCollection.insertOne(user);
       res.send(result);
     });
-    app.get("/users", async (req, res) => {
+    app.get("/users", verifyJWT, async (req, res) => {
       let query = {};
       const email = req.query.email;
       if (email) {
@@ -194,7 +194,7 @@ async function run() {
     });
 
     //admin get, seller data, get , update , delete
-    app.get("/users/seller", async (req, res) => {
+    app.get("/users/seller", verifyJWT, async (req, res) => {
       const Status = req.query.status;
       let query = {};
       if (Status) {
