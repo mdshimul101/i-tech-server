@@ -93,13 +93,24 @@ async function run() {
       const id = req.params.id;
       // console.log(id);
       const productStatus = req.body.productStatus;
-      console.log(productStatus);
+      const advertised = req.body.advertised;
+      console.log(productStatus, advertised);
       const query = { _id: ObjectId(id) };
-      const updatedDoc = {
-        $set: {
-          productStatus: productStatus,
-        },
-      };
+      let updatedDoc = {};
+      if (productStatus) {
+        updatedDoc = {
+          $set: {
+            productStatus: productStatus,
+          },
+        };
+      }
+      if (advertised) {
+        updatedDoc = {
+          $set: {
+            advertised: advertised,
+          },
+        };
+      }
 
       const seller = await productsCollection.updateOne(query, updatedDoc);
 
@@ -158,13 +169,14 @@ async function run() {
       if (email) {
         const query = { email: email };
         const singleUser = await usersCollection.findOne(query);
+        return res.send(singleUser);
 
-        if (singleUser.status !== "Admin") {
-          // console.log(singleUser.status);
-          return res.send(singleUser);
-        }
+        // if (singleUser.status !== "Admin") {
+        //   console.log(singleUser.status);
+        //   return res.send(singleUser);
+        // }
       }
-      // console.log("ok,,");
+      console.log("ok,,");
       const result = await usersCollection.find(query).toArray();
 
       res.send(result);
