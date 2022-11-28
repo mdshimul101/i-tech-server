@@ -197,7 +197,7 @@ async function run() {
     app.get("/users/seller", verifyJWT, async (req, res) => {
       const Status = req.query.status;
       let query = {};
-      if (Status) {
+      if (Status === "Seller") {
         query = { status: Status };
       }
 
