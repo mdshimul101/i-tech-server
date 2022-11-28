@@ -42,6 +42,17 @@ async function run() {
     const bookingsCollection = client.db("i-tech").collection("bookings");
     const usersCollection = client.db("i-tech").collection("users");
 
+    const verifyAdmin = async (req, res, next) => {
+      const decodedEmail = req.decoded.email;
+      const query = { email: decodedEmail };
+      const user = await usersCollection.findOne(query);
+
+      if (user?.role !== "admin") {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      next();
+    };
+
     app.get("/categories", async (req, res) => {
       const query = {};
       const result = await categoriesCollection.find(query).toArray();
@@ -63,6 +74,11 @@ async function run() {
       }
       const cursor = productsCollection.find(query);
       const result = await cursor.toArray();
+      res.send(result);
+    });
+    app.post("/products", async (req, res) => {
+      const product = req.body;
+      const result = await productsCollection.insertOne(product);
       res.send(result);
     });
     // app.get("/products/:id", async (req, res) => {
@@ -133,21 +149,73 @@ async function run() {
       if (email) {
         query = { email: email };
       }
-      // console.log("ok,,");
+
       const singleUser = await usersCollection.findOne(query);
-      console.log(singleUser.status);
+
       res.send(singleUser);
     });
+
+    //admin get, seller data, get , update , delete
     app.get("/users/seller", async (req, res) => {
       const Status = req.query.status;
-      console.log(Status);
+      let query = {};
       if (Status) {
         query = { status: Status };
       }
-      // console.log("ok,,");
+
       const seller = await usersCollection.find(query).toArray();
 
       res.send(seller);
+    });
+
+    app.patch("/users/seller/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      // console.log(id);
+      const verify = req.body.verify;
+      const query = { _id: ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          verify: verify,
+        },
+      };
+
+      const seller = await usersCollection.updateOne(query, updatedDoc);
+
+      res.send(seller);
+    });
+    app.delete(
+      "/users/seller/:id",
+      verifyJWT,
+
+      async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const result = await usersCollection.deleteOne(query);
+        res.send(result);
+      }
+    );
+
+    //all user update and delete
+    app.patch("/users/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const verify = req.body.verify;
+      const query = { _id: ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          verify: verify,
+        },
+      };
+
+      const user = await usersCollection.updateOne(query, updatedDoc);
+      // console.log(seller);
+      res.send(user);
+    });
+    app.delete("/users/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await usersCollection.deleteOne(query);
+      res.send(result);
     });
 
     app.post("/jwt", (req, res) => {
