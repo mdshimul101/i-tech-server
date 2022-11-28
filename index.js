@@ -81,12 +81,38 @@ async function run() {
       const result = await productsCollection.insertOne(product);
       res.send(result);
     });
-    // app.get("/products/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   const query = { _id: ObjectId(id) };
-    //   const booking = await productsCollection.findOne(query);
-    //   res.send(booking);
-    // });
+    //seller products
+    app.get("/products/seller", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const sellerProducts = await productsCollection.find(query).toArray();
+      res.send(sellerProducts);
+    });
+
+    app.patch("/products/seller/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      // console.log(id);
+      const productStatus = req.body.productStatus;
+      console.log(productStatus);
+      const query = { _id: ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          productStatus: productStatus,
+        },
+      };
+
+      const seller = await productsCollection.updateOne(query, updatedDoc);
+
+      res.send(seller);
+    });
+
+    app.delete("/products/seller/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      // console.log(id);
+      const query = { _id: ObjectId(id) };
+      const result = await productsCollection.deleteOne(query);
+      res.send(result);
+    });
 
     app.post("/bookings", async (req, res) => {
       const booking = req.body;
